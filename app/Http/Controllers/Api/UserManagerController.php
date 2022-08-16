@@ -28,9 +28,20 @@ class UserManagerController extends Controller
         } else {
             $limit = 10;
         }
+        $query = new AccountData();
+        if(!empty($request->input('usercode'))){
+            $query = $query->where('UserCode', trim($request->input('usercode')));
+        }
+        if(!empty($request->input('nickname'))){
+            $query = $query->where('NickName','LIKE','%'.trim($request->input('nickname').'%'));
+        }
+        $query = $query->select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot');
 
-        $data = AccountData::select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot')->paginate($limit);
-        $total = AccountData::select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot')->count();
+        $data = $query->paginate($limit);
+        $total = $query->count();
+        // $data = AccountData::select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot')->paginate($limit);
+        // $total = AccountData::select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot')->count();
+
 
         return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('total' => $total, 'data' => $data)]);
     }
