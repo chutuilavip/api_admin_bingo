@@ -29,6 +29,9 @@ class UserManagerController extends Controller
             $limit = 10;
         }
         $query = new AccountData();
+        if(!empty($request->input('userid'))){
+            $query = $query->where('UserID', trim($request->input('userid')));
+        }
         if(!empty($request->input('usercode'))){
             $query = $query->where('UserCode', trim($request->input('usercode')));
         }
