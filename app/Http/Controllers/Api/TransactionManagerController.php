@@ -20,18 +20,23 @@ class TransactionManagerController extends Controller
         } else {
             $limit = 10;
         }
+        
+        $jquery=Transaction::select('transaction.*', 'accountdata.NickName')
+        ->join('accountdata', 'transaction.account', '=', 'accountdata.UserID')
+        ->where('status','success');
+         if(!empty($request->input('nickName'))){  
+          $jquery=$jquery->where('accountdata.NickName','LIKE','%'.$request->input('nickName').'%');
+         }
+       
+         if(!empty($request->input('from_account'))){  
+            $jquery=$jquery->where('transaction.from',$request->input('from_account'));
+        }
 
-        $data = Transaction::select('transaction.*', 'accountdata.NickName')
-            ->join('accountdata', 'transaction.account', '=', 'accountdata.UserID')
-            ->where('status', 'success')
-            ->paginate($limit);
+        $data = $jquery->paginate($limit);
 
-        $total = Transaction::join('accountdata', 'transaction.account', '=', 'accountdata.UserID')
-        ->where('status', 'success')
-        ->selectRaw('count(transaction.account) as total')
-        ->first();
+        $total = $jquery->count();
 
-        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('total' => $total->total, 'data' => $data)]);
+        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('total' => $total, 'data' => $data)]);
     }
 
     /**
