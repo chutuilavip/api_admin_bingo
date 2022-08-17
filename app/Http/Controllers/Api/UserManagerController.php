@@ -28,9 +28,28 @@ class UserManagerController extends Controller
         } else {
             $limit = 10;
         }
+        
+        $query = new AccountData;
 
-        $data = AccountData::select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot')->paginate($limit);
-        $total = AccountData::select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot')->count();
+        if (!empty($request->input('UserID'))) {
+            $query = $query->where('UserID', $request->input('UserID'));
+        }
+        if (!empty($request->input('UserCode'))) {
+            $query = $query->where('UserCode', $request->input('UserCode'));
+        }
+        if (!empty($request->input('NickName'))) {
+            $query = $query->where('NickName', 'like', '%' . $request->input('NickName') . '%');
+        }
+        if (isset($request->isBlock)) {
+            $query = $query->where('isBlock', $request->isBlock);
+        }
+        if (!empty($request->accountLevel)) {
+            $query = $query->where('accountLevel', $request->accountLevel);
+        }
+        $query =  $query->select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot');
+
+        $data = $query->paginate($limit);
+        $total = $query->count();
 
         return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('total' => $total, 'data' => $data)]);
     }
@@ -67,7 +86,6 @@ class UserManagerController extends Controller
         $data = AccountData::select('*')->where('uID', $id)->first();
 
         return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('data' => $data)]);
-
     }
 
     /**
@@ -99,11 +117,11 @@ class UserManagerController extends Controller
         ], [
             'NickName.required' => 'Vui lòng nhập nick name',
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json(['status' => 400, 'errors' => $validator->errors()->all()]);
         }
-        
+
         if (AccountData::where('uID', $id)->exists()) {
             $account = AccountData::find($id);
             if (!empty($request->Gold)) {
