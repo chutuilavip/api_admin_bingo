@@ -63,6 +63,7 @@ Route::group([
 ], function () {
     Route::get('/sys', 'Api\SystemManagerController@index');  
     Route::post('/sys/update', 'Api\SystemManagerController@update');  
+    Route::get('/data-point', 'Api\UserManagerController@datapoint');
 });
 
 Route::group([

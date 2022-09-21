@@ -53,7 +53,24 @@ class UserManagerController extends Controller
 
         return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('total' => $total, 'data' => $data)]);
     }
+    
+    public function datapoint(Request $request)
+    {
+        // $request->start = "2022-09-19";
+        // $request->end = "2022-09-20";
 
+        $data = DB::select('SELECT sum(s.add_gold) as earnGoldToday,count(s.add_gold) as Turn,s.uID,s.UserID,s.NickName,s.accountExp,s.Gold, s.registerDate, s.lastAccessDate 
+                                from (	select l.uID,l.add_gold,l.logdate,d.UserID,d.NickName,d.accountExp,d.Gold,d.registerDate,d.lastAccessDate,d.pendingGold 
+                                        from bingotest.accountdata as d 
+                                        INNER JOIN bingotest.gold_log as l ON d.uID = l.uID 
+                                        where date(l.logdate) between TIMESTAMP(?, "10:00:00") and TIMESTAMP(?, "09:59:59")
+                                    ) as s 
+                            group by s.uID 
+                            order by earnGoldToday desc', [$request->start, $request->end]);
+                            // 2022-09-11
+        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('data' => $data)]);
+    }
+    
     /**
      * Show the form for creating a new resource.
      *
