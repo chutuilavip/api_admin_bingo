@@ -102,24 +102,49 @@ class SystemManagerController extends Controller
             // }
 
             if ($request->hasFile('maintain_content')) {
-                $image = $request->file('maintain_content');
-                $filename  = time() . '.' . $image->getClientOriginalExtension();
-                $path = public_path('storage/public/images/logo/' . $filename);
-                Image::make($image->getRealPath())->resize(200, 200)->save($path);
-                $filename = asset("storage/public/images/logo/$filename");
-                DB::update("update systems set conf_val = '$filename' WHERE conf_field = 'maintain_content'");
+                $file = $request->file('maintain_content');
+    
+                $filePath = 'images/' . time() . '_' . md5($file->getClientOriginalName()).$file->getClientOriginalName();
+                $isFileUploaded = Storage::disk('public')->put($filePath, file_get_contents($request->maintain_content));
+                $url = Storage::disk('public')->url($filePath);
+                if (!$isFileUploaded) {
+                    return response()->json(['status' => 400, 'error' => "Lỗi upload ảnh"]);
+                }
+                
+                DB::update("update systems set conf_val = '$url' WHERE conf_field = 'maintain_content'");
             }
 
+            // dd(1);
+            // if ($request->hasFile('maintain_content')) {
+            //     $image = $request->file('maintain_content');
+            //     $filename  = time() . '.' . $image->getClientOriginalExtension();
+            //     $path = public_path('storage/public/images/logo/' . $filename);
+            //     Image::make($image->getRealPath())->resize(200, 200)->save($path);
+            //     $filename = asset("storage/public/images/logo/$filename");
+            //     DB::update("update systems set conf_val = '$filename' WHERE conf_field = 'maintain_content'");
+            // }
+            // if ($request->hasFile('apk')) {
+            //     $apk = $request->file('apk');
+            //     $apkfilename  = time() . '.' . $apk->getClientOriginalExtension();
+            //     $path = public_path('storage/public/apk/' . $apkfilename);
+
+            //     $request->file->move(public_path('file'), $apkfilename);
+
+            //     $apkfilename = public_path('file').$apkfilename;
+
+            //     DB::update("update systems set conf_val = '$apkfilename' WHERE conf_field = 'apk'");
+            // }
             if ($request->hasFile('apk')) {
-                $apk = $request->file('apk');
-                $apkfilename  = time() . '.' . $apk->getClientOriginalExtension();
-                $path = public_path('storage/public/apk/' . $apkfilename);
-
-                $request->file->move(public_path('file'), $apkfilename);
-
-                $apkfilename = public_path('file').$apkfilename;
-
-                DB::update("update systems set conf_val = '$apkfilename' WHERE conf_field = 'apk'");
+                $file = $request->file('apk');
+    
+                $filePath = 'apk/'.$file->getClientOriginalName();
+                $isFileUploaded = Storage::disk('public')->put($filePath, file_get_contents($request->apk));
+                $url = Storage::disk('public')->url($filePath);
+                if (!$isFileUploaded) {
+                    return response()->json(['status' => 400, 'error' => "Lỗi upload ảnh"]);
+                }
+                
+                DB::update("update systems set conf_val = '$url' WHERE conf_field = 'apk'");
             }
 
             DB::commit();
