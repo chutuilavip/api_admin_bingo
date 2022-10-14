@@ -110,6 +110,18 @@ class SystemManagerController extends Controller
                 DB::update("update systems set conf_val = '$filename' WHERE conf_field = 'maintain_content'");
             }
 
+            if ($request->hasFile('apk')) {
+                $apk = $request->file('apk');
+                $apkfilename  = time() . '.' . $apk->getClientOriginalExtension();
+                $path = public_path('storage/public/apk/' . $apkfilename);
+
+                $request->file->move(public_path('file'), $apkfilename);
+
+                $apkfilename = public_path('file').$apkfilename;
+
+                DB::update("update systems set conf_val = '$apkfilename' WHERE conf_field = 'apk'");
+            }
+
             DB::commit();
         }catch(\Exception $e){
             DB::rollback();
