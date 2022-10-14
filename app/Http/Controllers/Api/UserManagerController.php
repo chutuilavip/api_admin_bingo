@@ -29,28 +29,20 @@ class UserManagerController extends Controller
             $limit = 10;
         }
         
-        $query = new AccountData;
-
-        if (!empty($request->input('UserID'))) {
-            $query = $query->where('UserID', $request->input('UserID'));
+        $query = new AccountData();
+        if(!empty($request->input('userid'))){
+            $query = $query->where('UserID', trim($request->input('userid')));
         }
-        if (!empty($request->input('UserCode'))) {
-            $query = $query->where('UserCode', $request->input('UserCode'));
+        if(!empty($request->input('usercode'))){
+            $query = $query->where('UserCode', trim($request->input('usercode')));
         }
-        if (!empty($request->input('NickName'))) {
-            $query = $query->where('NickName', 'like', '%' . $request->input('NickName') . '%');
+        if(!empty($request->input('nickname'))){
+            $query = $query->where('NickName','LIKE','%'.trim($request->input('nickname').'%'));
         }
-        if (isset($request->isBlock)) {
-            $query = $query->where('isBlock', $request->isBlock);
-        }
-        if (!empty($request->accountLevel)) {
-            $query = $query->where('accountLevel', $request->accountLevel);
-        }
-        $query =  $query->select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot');
+        $query = $query->select('*')->where(DB::raw('LEFT(`UserID`, 3)'), '<>', 'bot');
 
         $data = $query->paginate($limit);
         $total = $query->count();
-
         return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('total' => $total, 'data' => $data)]);
     }
     

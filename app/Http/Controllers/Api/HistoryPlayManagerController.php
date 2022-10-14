@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccountData;
 use App\Models\UserOwnedRecord;
 use Illuminate\Http\Request;
 
@@ -20,14 +21,23 @@ class HistoryPlayManagerController extends Controller
         } else {
             $limit = 10;
         }
+        $query = UserOwnedRecord::select('userowned_record.*', 'accountdata.NickName')
+        ->join('accountdata', 'userowned_record.uID', '=', 'accountdata.uID');
 
-        $data = UserOwnedRecord::select('userowned_record.*', 'accountdata.NickName')
-            ->join('accountdata', 'userowned_record.uID', '=', 'accountdata.uID')
-            ->paginate($limit);
+        if(!empty($request->input('nickname'))){
+            $query = $query->where('userowned_record.vs_nickname','LIKE','%'.trim($request->input('nickname')).'%');
+        }
+        
+        $data = $query->paginate($limit);
+        $total = $query->count();
+
+        // $data = UserOwnedRecord::select('userowned_record.*', 'accountdata.NickName')
+        //     ->join('accountdata', 'userowned_record.uID', '=', 'accountdata.uID')
+        //     ->paginate($limit);
             
-        $total = UserOwnedRecord::join('accountdata', 'userowned_record.uID', '=', 'accountdata.uID')->selectRaw('count(userowned_record.uID) as total')->first();
+        // $total = UserOwnedRecord::join('accountdata', 'userowned_record.uID', '=', 'accountdata.uID')->selectRaw('count(userowned_record.uID) as total')->first();
 
-        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('total' => $total->total, 'data' => $data)]);
+        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('total' => $total, 'data' => $data)]);
     }
 
     /**
