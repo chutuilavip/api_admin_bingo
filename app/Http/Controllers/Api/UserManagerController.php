@@ -59,8 +59,8 @@ class UserManagerController extends Controller
         if(empty($request->start) || empty($request->end)){
             $data = DB::select('SELECT sum(s.add_gold) as earnGoldToday,count(s.add_gold) as Turn,s.uID,s.UserID,s.NickName,s.accountExp,s.Gold, s.registerDate, s.lastAccessDate 
             from (	select l.uID,l.add_gold,l.logdate,d.UserID,d.NickName,d.accountExp,d.Gold,d.registerDate,d.lastAccessDate,d.pendingGold 
-                    from bingotest.accountdata as d 
-                    INNER JOIN bingotest.gold_log as l ON d.uID = l.uID 
+                    from accountdata as d 
+                    INNER JOIN gold_log as l ON d.uID = l.uID 
                 ) as s 
             group by s.uID 
             order by earnGoldToday desc');
@@ -68,8 +68,8 @@ class UserManagerController extends Controller
             
             $data = DB::select('SELECT sum(s.add_gold) as earnGoldToday,count(s.add_gold) as Turn,s.uID,s.UserID,s.NickName,s.accountExp,s.Gold, s.registerDate, s.lastAccessDate 
             from (	select l.uID,l.add_gold,l.logdate,d.UserID,d.NickName,d.accountExp,d.Gold,d.registerDate,d.lastAccessDate,d.pendingGold 
-                    from bingotest.accountdata as d 
-                    INNER JOIN bingotest.gold_log as l ON d.uID = l.uID 
+                    from accountdata as d 
+                    INNER JOIN gold_log as l ON d.uID = l.uID 
                     where date(l.logdate) between TIMESTAMP(?, ?) and TIMESTAMP(?, ?)
                 ) as s 
             group by s.uID 
