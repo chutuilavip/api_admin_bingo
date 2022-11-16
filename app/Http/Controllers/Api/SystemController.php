@@ -12,7 +12,7 @@ class SystemController extends Controller
     {
         //
         $sys = System::gets();
-        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('data' => $sys)]);
+        return response()->json(['status' => 200, 'success' => 'Ok', 'data' => $sys]);
         
     }
 }
