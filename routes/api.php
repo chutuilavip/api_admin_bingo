@@ -102,5 +102,7 @@ Route::group([
     'prefix' => 'show',
 ], function () {
     Route::get('/banner', 'Api\BannerController@index');  
-    Route::get('/banner/{id}', 'Api\BannerController@show');  
+    Route::get('/banner/{id}', 'Api\BannerController@show');
+    
+    Route::get('/sys', 'Api\SystemController@index');  
 });
