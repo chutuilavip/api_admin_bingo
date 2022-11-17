@@ -24,7 +24,8 @@ class SystemManagerController extends Controller
     {
         //
         $sys = System::gets();
-        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('data' => $sys)]);
+        $history_version = HistoryVersion::orderBy('created_at', 'DESC')->get();
+        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('data' => ['sys' => $sys, 'history_version' => $history_version])]);
         
     }
 
