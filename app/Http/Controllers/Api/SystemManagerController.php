@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\HistoryVersion;
 use App\Models\System;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,8 @@ class SystemManagerController extends Controller
     {
         //
         $sys = System::gets();
-        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('data' => $sys)]);
+        $history_version = HistoryVersion::orderBy('created_at', 'DESC')->get();
+        return response()->json(['status' => 200, 'success' => 'Ok', 'res' => array('data' => ['sys' => $sys, 'history_version' => $history_version])]);
         
     }
 
@@ -114,7 +116,6 @@ class SystemManagerController extends Controller
                 DB::update("update systems set conf_val = '$url' WHERE conf_field = 'maintain_content'");
             }
 
-            // dd(1);
             // if ($request->hasFile('maintain_content')) {
             //     $image = $request->file('maintain_content');
             //     $filename  = time() . '.' . $image->getClientOriginalExtension();
@@ -135,16 +136,27 @@ class SystemManagerController extends Controller
             //     DB::update("update systems set conf_val = '$apkfilename' WHERE conf_field = 'apk'");
             // }
             if ($request->hasFile('apk')) {
-                $file = $request->file('apk');
+                if (!HistoryVersion::where('title', '=', $request->version)->exists()) {
+                    $file = $request->file('apk');
+        
+                    $filePath = 'apk/'.$file->getClientOriginalName();
+                    $isFileUploaded = Storage::disk('public')->put($filePath, file_get_contents($request->apk));
+                    $url = Storage::disk('public')->url($filePath);
+                    if (!$isFileUploaded) {
+                        return response()->json(['status' => 400, 'error' => "Lỗi upload ảnh"]);
+                    }
+                    
+                    DB::update("update systems set conf_val = '$url' WHERE conf_field = 'apk'");
     
-                $filePath = 'apk/'.$file->getClientOriginalName();
-                $isFileUploaded = Storage::disk('public')->put($filePath, file_get_contents($request->apk));
-                $url = Storage::disk('public')->url($filePath);
-                if (!$isFileUploaded) {
-                    return response()->json(['status' => 400, 'error' => "Lỗi upload ảnh"]);
+                    HistoryVersion::create([
+                        'title' => $request->version,
+                        'apk' => $url,
+                    ]);
+                }else{
+                    DB::rollback();
+                    return response()->json(['status' => 200, 'error' => "Version $request->version đã tồn tại!!!"]);
                 }
-                
-                DB::update("update systems set conf_val = '$url' WHERE conf_field = 'apk'");
+
             }
 
             DB::commit();
